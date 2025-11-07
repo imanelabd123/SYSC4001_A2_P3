@@ -213,7 +213,11 @@ int main(int argc, char** argv) {
 
     std::vector<PCB> wait_queue;
 
-    /******************ADD YOUR VARIABLES HERE*************************/
+    int current_time = 0;
+    std::string execution_output;
+    std::string system_status_output;
+    int total_forks = 0;
+    int total_execs = 0;
 
 
     /******************************************************************/
