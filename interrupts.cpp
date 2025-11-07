@@ -5,7 +5,7 @@
  *
  */
 
-#include<interrupts.hpp>
+#include "interrupts.hpp"
 static unsigned int NEXT_PID = 1;
 
 static inline void add_event(std::string& execution, int& t, int duration, const std::string& msg){
