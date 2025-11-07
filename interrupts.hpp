@@ -49,6 +49,50 @@ struct external_file{
     unsigned int    size;
 };
 
+std::tuple<std::vector<std::string>, std::vector<int>> parse_args(int argc, char** argv) {
+    if(argc != 4) {
+        std::cout << "ERROR!\nExpected 3 argument, received " << argc - 1 << std::endl;
+        std::cout << "To run the program, do: ./interrutps <your_trace_file.txt> <your_vector_table.txt> <your_device_table.txt>" << std::endl;
+        exit(1);
+    }
+
+    std::ifstream input_file;
+    input_file.open(argv[1]);
+    if (!input_file.is_open()) {
+        std::cerr << "Error: Unable to open file: " << argv[1] << std::endl;
+        exit(1);
+    }
+
+    std::ifstream input_vector_table;
+    input_vector_table.open(argv[2]);
+    if (!input_vector_table.is_open()) {
+        std::cerr << "Error: Unable to open file: " << argv[2] << std::endl;
+        exit(1);
+    }
+
+    std::string vector;
+    std::vector<std::string> vectors;
+    while(std::getline(input_vector_table, vector)) {
+        vectors.push_back(vector);
+    }
+    input_vector_table.close();
+
+    std::string duration;
+    std::vector<int> delays;
+    std::ifstream device_table;
+    device_table.open(argv[3]);
+    if (!device_table.is_open()) {
+        std::cerr << "Error: Unable to open file: " << argv[3] << std::endl;
+        exit(1);
+    }
+    while(std::getline(device_table, duration)) {
+        delays.push_back(std::stoi(duration));
+    }
+
+    return {vectors, delays};
+}
+
+
 //Allocates a program to memory (if there is space)
 //returns true if the allocation was sucessful, false if not.
 bool allocate_memory(PCB* current) {
