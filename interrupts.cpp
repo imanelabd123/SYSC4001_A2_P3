@@ -18,10 +18,10 @@ static inline void add_event(std::string& execution, int& t, int duration, const
                                    PCB current,
                                    const std::vector<PCB>& wait_queue)
 {
-    systemstatus += "time: " + std::to_string(current_time) +
+    system_status += "time: " + std::to_string(current_time) +
                      "; current trace: " + current_trace_line + "\n";
-    systemstatus += print_PCB(current, wait_queue);
-    systemstatus += "\n";
+    system_status += print_PCB(current, wait_queue);
+    system_status += "\n";
 }
 }
 std::tuple<std::string, std::string, int> simulate_trace(std::vector<std::string> trace_file, int time, std::vector<std::string> vectors, std::vector<int> delays, std::vector<external_file> external_files, PCB current, std::vector<PCB> wait_queue) {
@@ -66,9 +66,17 @@ std::tuple<std::string, std::string, int> simulate_trace(std::vector<std::string
 
             ///////////////////////////////////////////////////////////////////////////////////////////
             //Add your FORK output here
+            PCB child(current.PID + 1, current.PID, current.program_name, current.size, -1)
+            bool place = allocate_memory(&child);
+            if (!place){
+                wait_queue.push_back(child);
+                add_event(execution, current_time,1,"FORK child PID =" +std::to_string(child.PID)+ "waiting");
+            }else{
+                add_event(execution, current_time,1,"FORK child PID =" +std::to_string(child.PID)+ "allocated"+std::to_string(child.partition_number));
+                    
+            }
 
-
-
+            snapshot(system_status, current_time,trace, current,wait_queue);
             ///////////////////////////////////////////////////////////////////////////////////////////
 
             //The following loop helps you do 2 things:
@@ -106,9 +114,20 @@ std::tuple<std::string, std::string, int> simulate_trace(std::vector<std::string
             i = parent_index;
 
             ///////////////////////////////////////////////////////////////////////////////////////////
-            //With the child's trace, run the child (HINT: think recursion)
+            {
+            auto [execution_child, system_status_child, child_end_time] =
+            simulate_trace(child_trace,
+                       current_time,
+                       vectors,
+                       delays,
+                       external_files,
+                       child,
+                       wait_queue);
 
-
+            execution      += execution_child;
+            system_status  += system_status_child;
+            current_time    = child_end_time;
+            }
 
             ///////////////////////////////////////////////////////////////////////////////////////////
 
@@ -120,7 +139,7 @@ std::tuple<std::string, std::string, int> simulate_trace(std::vector<std::string
 
             ///////////////////////////////////////////////////////////////////////////////////////////
             //Add your EXEC output here
-
+    
 
 
             ///////////////////////////////////////////////////////////////////////////////////////////
@@ -195,6 +214,6 @@ int main(int argc, char** argv) {
 
     write_output(execution, "execution.txt");
     write_output(system_status, "system_status.txt");
-
+ 
     return 0;
 }
